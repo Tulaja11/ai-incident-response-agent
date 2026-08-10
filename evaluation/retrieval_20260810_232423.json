@@ -1,0 +1,27 @@
+{
+  "results": [
+    {
+      "mode": "full",
+      "recall@1": 1.0,
+      "recall@3": 1.0,
+      "mrr": 1.0,
+      "mean_latency_ms": 707.7767066502323
+    },
+    {
+      "mode": "realistic",
+      "recall@1": 0.9333333333333333,
+      "recall@3": 1.0,
+      "mrr": 0.9666666666666667,
+      "mean_latency_ms": 634.5184000674635
+    },
+    {
+      "mode": "coldstart",
+      "recall@1": 0.9333333333333333,
+      "recall@3": 1.0,
+      "mrr": 0.9666666666666667,
+      "mean_latency_ms": 609.8870000181099
+    }
+  ],
+  "corpus_size": 24,
+  "test_cases": 15
+}
