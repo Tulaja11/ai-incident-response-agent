@@ -1,0 +1,7 @@
+venv/
+.env
+__pycache__/
+*.pyc
+incidents.db
+chroma_store/
+models/*.pkl

@@ -1,0 +1,9 @@
+2026-02-03T06:00:04.117Z INFO  api-gateway [auth-filter] Validating bearer token for /v2/accounts request_id=REQ-77120
+2026-02-03T06:00:04.119Z WARN  api-gateway [auth-filter] JWT signature verification failed, kid=sk-2025-11 not found in JWKS
+2026-02-03T06:00:04.121Z ERROR api-gateway [auth-filter] Rejecting request with 401
+com.shopflow.auth.TokenValidationException: Unknown signing key id: sk-2025-11
+	at com.shopflow.auth.JwksResolver.resolve(JwksResolver.java:64)
+	at com.shopflow.auth.TokenValidator.validate(TokenValidator.java:112)
+	at com.shopflow.gateway.AuthFilter.doFilter(AuthFilter.java:78)
+2026-02-03T06:00:04.140Z ERROR api-gateway [auth-filter] 1204 requests rejected with 401 in the last 60s across all endpoints
+2026-02-03T06:00:05.002Z ERROR api-gateway [auth-filter] All authenticated traffic failing, signing key rotation suspected

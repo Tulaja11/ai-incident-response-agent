@@ -1,0 +1,8 @@
+2026-06-25 15:41:09 DEBUG admin-portal - login attempt user=priya.n@shopflow source_ip=10.4.2.88
+2026-06-25 15:41:09 WARN  admin-portal - MFA challenge failed, code mismatch attempt 1 of 5
+2026-06-25 15:41:24 WARN  admin-portal - MFA challenge failed, code mismatch attempt 2 of 5
+2026-06-25 15:41:41 ERROR admin-portal - authentication failed, session not established
+AuthenticationError: TOTP verification failed, drift exceeded tolerance window
+  File "/srv/portal/auth/mfa.py", line 118, in verify_totp
+    raise AuthenticationError("TOTP verification failed, drift exceeded tolerance window")
+2026-06-25 15:41:41 INFO  admin-portal - user prompted to re-enroll device, account not locked

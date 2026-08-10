@@ -1,0 +1,7 @@
+2026-05-29 16:55:02 INFO  audit-logger - flushing buffered audit events, batch size 500
+2026-05-29 16:55:09 ERROR audit-logger - batch insert failed
+psycopg2.errors.DeadlockDetected: deadlock detected
+DETAIL:  Process 8821 waits for ExclusiveLock on tuple (441,12) of relation 16783 of database 16400; blocked by process 8834.
+  File "/srv/audit/writer.py", line 63, in flush
+    cur.executemany(INSERT_AUDIT_SQL, rows)
+2026-05-29 16:55:09 WARN  audit-logger - batch re-queued, 500 events delayed but not lost

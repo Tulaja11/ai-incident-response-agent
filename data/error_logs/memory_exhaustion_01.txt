@@ -1,0 +1,12 @@
+2026-03-30T08:11:20.443Z INFO  export-service [main] Beginning full catalogue export, estimated 1.2M rows
+2026-03-30T08:14:55.019Z WARN  export-service [G1 Young Gen] GC pause 2841ms, heap 7.6G/8.0G after collection
+2026-03-30T08:15:31.887Z WARN  export-service [G1 Young Gen] GC pause 4102ms, heap 7.9G/8.0G after collection
+2026-03-30T08:15:44.220Z ERROR export-service [main] Fatal error, terminating
+java.lang.OutOfMemoryError: Java heap space
+	at java.base/java.util.Arrays.copyOf(Arrays.java:3512)
+	at java.base/java.util.ArrayList.grow(ArrayList.java:237)
+	at java.base/java.util.ArrayList.add(ArrayList.java:487)
+	at com.shopflow.export.CatalogueExporter.loadAllProducts(CatalogueExporter.java:76)
+	at com.shopflow.export.CatalogueExporter.run(CatalogueExporter.java:39)
+2026-03-30T08:15:44.502Z ERROR export-service [main] Process exiting with code 137, container OOMKilled
+2026-03-30T08:15:47.001Z ERROR api-gateway [health-check] export-service /health unreachable, removing from pool

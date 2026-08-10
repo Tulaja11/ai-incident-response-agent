@@ -1,0 +1,12 @@
+2026-03-14T09:22:41.102Z INFO  order-service [http-nio-8080-exec-4] Received checkout request cart_id=CRT-88213 user_id=U-40192
+2026-03-14T09:22:41.118Z INFO  order-service [http-nio-8080-exec-4] Resolving shipping address for user_id=U-40192
+2026-03-14T09:22:41.121Z WARN  order-service [http-nio-8080-exec-4] Address lookup returned no rows for user_id=U-40192
+2026-03-14T09:22:41.124Z ERROR order-service [http-nio-8080-exec-4] Unhandled exception processing checkout
+java.lang.NullPointerException: Cannot invoke "com.shopflow.model.Address.getPostalCode()" because "shippingAddress" is null
+	at com.shopflow.order.ShippingCalculator.calculateRate(ShippingCalculator.java:87)
+	at com.shopflow.order.CheckoutService.buildOrderSummary(CheckoutService.java:214)
+	at com.shopflow.order.CheckoutService.processCheckout(CheckoutService.java:139)
+	at com.shopflow.api.CheckoutController.postCheckout(CheckoutController.java:56)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:255)
+2026-03-14T09:22:41.130Z ERROR order-service [http-nio-8080-exec-4] Returning 500 to client, order not created

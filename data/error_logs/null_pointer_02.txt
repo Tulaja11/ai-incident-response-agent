@@ -1,0 +1,11 @@
+[2026-04-02 17:44:03,881] INFO  analytics-worker: batch job daily_rollup started, partition=2026-04-01
+[2026-04-02 17:44:09,204] INFO  analytics-worker: loaded 41892 event records from warehouse
+[2026-04-02 17:44:09,377] WARN  analytics-worker: 37 records missing 'session' key, continuing
+[2026-04-02 17:44:09,392] ERROR analytics-worker: batch job failed
+Traceback (most recent call last):
+  File "/app/analytics/jobs/daily_rollup.py", line 118, in run
+    summary = build_session_summary(events)
+  File "/app/analytics/transforms/sessions.py", line 64, in build_session_summary
+    duration = event["session"]["end_ts"] - event["session"]["start_ts"]
+TypeError: 'NoneType' object is not subscriptable
+[2026-04-02 17:44:09,395] ERROR analytics-worker: partition 2026-04-01 not written, will retry next cycle

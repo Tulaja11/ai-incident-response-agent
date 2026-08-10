@@ -1,0 +1,8 @@
+2026-06-11 19:33:02 INFO  report-generator - scheduled export starting for tenant=acme-corp
+2026-06-11 19:33:02 INFO  report-generator - fetching metadata from config-service:7070
+2026-06-11 19:33:17 WARN  report-generator - config-service slow response, 15021ms elapsed
+2026-06-11 19:33:22 ERROR report-generator - read timeout contacting config-service
+java.net.SocketTimeoutException: Read timed out
+	at com.shopflow.report.ConfigClient.fetchTenantConfig(ConfigClient.java:71)
+	at com.shopflow.report.ExportJob.prepare(ExportJob.java:44)
+2026-06-11 19:33:22 INFO  report-generator - falling back to cached config from 2026-06-10, export continuing with stale settings

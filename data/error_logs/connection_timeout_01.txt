@@ -1,0 +1,14 @@
+2026-01-28T14:03:12.001Z INFO  payment-service [pool-3-thread-7] Processing order ORD-99214 amount=4820 currency=INR
+2026-01-28T14:03:12.015Z INFO  payment-service [pool-3-thread-7] Opening connection to gateway-adapter at 10.0.3.42:8443
+2026-01-28T14:03:42.019Z WARN  payment-service [pool-3-thread-7] Connect attempt 1/3 timed out after 30000ms
+2026-01-28T14:04:12.024Z WARN  payment-service [pool-3-thread-7] Connect attempt 2/3 timed out after 30000ms
+2026-01-28T14:04:42.031Z WARN  payment-service [pool-3-thread-7] Connect attempt 3/3 timed out after 30000ms
+2026-01-28T14:04:42.033Z ERROR payment-service [pool-3-thread-7] All retries exhausted, failing transaction
+java.net.SocketTimeoutException: connect timed out
+	at java.base/java.net.PlainSocketImpl.socketConnect(Native Method)
+	at com.shopflow.payment.GatewayClient.openChannel(GatewayClient.java:143)
+	at com.shopflow.payment.GatewayClient.authorize(GatewayClient.java:98)
+	at com.shopflow.payment.PaymentProcessor.charge(PaymentProcessor.java:187)
+2026-01-28T14:04:42.040Z ERROR payment-service [pool-3-thread-7] ORD-99214 marked PAYMENT_FAILED, customer charged=false
+2026-01-28T14:04:43.118Z ERROR payment-service [pool-3-thread-9] ORD-99215 connect timed out, gateway-adapter unreachable
+2026-01-28T14:04:44.202Z ERROR payment-service [pool-3-thread-2] ORD-99216 connect timed out, gateway-adapter unreachable

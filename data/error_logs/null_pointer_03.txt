@@ -1,0 +1,9 @@
+2026-02-19 11:08:55 DEBUG notification-service - dispatching template=welcome_email locale=de-DE
+2026-02-19 11:08:55 DEBUG notification-service - template cache miss, loading from disk
+2026-02-19 11:08:55 ERROR notification-service - failed to render notification
+AttributeError: 'NoneType' object has no attribute 'render'
+  File "/srv/notify/dispatch.py", line 92, in send
+    body = template.render(context)
+  File "/srv/notify/loader.py", line 41, in get_template
+    return self._cache.get(name)
+2026-02-19 11:08:55 WARN  notification-service - message queued for retry, attempt 1 of 3

@@ -1,0 +1,11 @@
+[2026-03-06 04:22:10,556] INFO  billing-service: running monthly invoice finalisation, 8200 accounts
+[2026-03-06 04:22:44,102] WARN  billing-service: lock wait 8.4s on invoices table, account_id=A-3391
+[2026-03-06 04:22:51,338] ERROR billing-service: transaction aborted
+sqlalchemy.exc.OperationalError: (pymysql.err.OperationalError) (1213, 'Deadlock found when trying to get lock; try restarting transaction')
+[SQL: UPDATE invoices SET status=%s, finalised_at=%s WHERE account_id=%s AND period=%s]
+  File "/app/billing/repository.py", line 227, in finalise_invoice
+    session.execute(stmt)
+  File "/app/billing/tasks/monthly.py", line 95, in run
+    self.repo.finalise_invoice(account_id, period)
+[2026-03-06 04:22:51,341] WARN  billing-service: retrying transaction for A-3391, attempt 2 of 3
+[2026-03-06 04:22:52,880] INFO  billing-service: A-3391 finalised on retry, job continuing

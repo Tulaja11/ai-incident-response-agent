@@ -1,0 +1,137 @@
+{
+  "null_pointer_01": {
+    "error_type": "NullPointerException",
+    "affected_system": "order-service",
+    "severity": "High",
+    "root_cause": "ShippingCalculator.calculateRate dereferences shippingAddress without a null check; the address lookup returned no rows for the user.",
+    "expected_file": "ShippingCalculator.java",
+    "expected_line": 87,
+    "environment": "production"
+  },
+  "null_pointer_02": {
+    "error_type": "NullPointerException",
+    "affected_system": "analytics-worker",
+    "severity": "Medium",
+    "root_cause": "build_session_summary indexes into event['session'] which is None for 37 malformed records; the earlier warning was logged but not acted on.",
+    "expected_file": "sessions.py",
+    "expected_line": 64,
+    "environment": "production"
+  },
+  "null_pointer_03": {
+    "error_type": "NullPointerException",
+    "affected_system": "notification-service",
+    "severity": "Low",
+    "root_cause": "get_template returns None on cache miss instead of loading from disk; dispatch.send calls .render() on the None result.",
+    "expected_file": "dispatch.py",
+    "expected_line": 92,
+    "environment": "staging"
+  },
+  "connection_timeout_01": {
+    "error_type": "ConnectionTimeout",
+    "affected_system": "payment-service",
+    "severity": "Critical",
+    "root_cause": "gateway-adapter at 10.0.3.42:8443 is unreachable; all three retries exhausted and multiple concurrent orders are failing, indicating a full payment outage rather than a single transient failure.",
+    "expected_file": "GatewayClient.java",
+    "expected_line": 143,
+    "environment": "production"
+  },
+  "connection_timeout_02": {
+    "error_type": "ConnectionTimeout",
+    "affected_system": "search-indexer",
+    "severity": "High",
+    "root_cause": "Elasticsearch cluster es-prod-01.internal is not accepting connections on port 9200; the bulk indexing request times out after 30s, leaving 2400 documents unindexed.",
+    "expected_file": "pipeline.py",
+    "expected_line": 203,
+    "environment": "production"
+  },
+  "connection_timeout_03": {
+    "error_type": "ConnectionTimeout",
+    "affected_system": "report-generator",
+    "severity": "Medium",
+    "root_cause": "config-service response exceeded the read timeout; the job degraded gracefully to a cached config from the previous day rather than failing outright.",
+    "expected_file": "ConfigClient.java",
+    "expected_line": 71,
+    "environment": "production"
+  },
+  "memory_exhaustion_01": {
+    "error_type": "OutOfMemoryError",
+    "affected_system": "export-service",
+    "severity": "Critical",
+    "root_cause": "loadAllProducts accumulates all 1.2M product rows into a single in-memory ArrayList instead of streaming or paginating, exhausting the 8G heap and triggering an OOMKill.",
+    "expected_file": "CatalogueExporter.java",
+    "expected_line": 76,
+    "environment": "production"
+  },
+  "memory_exhaustion_02": {
+    "error_type": "OutOfMemoryError",
+    "affected_system": "ml-inference",
+    "severity": "High",
+    "root_cause": "_embed allocates a float64 array of shape (100000, 4096) per batch; using float32 or chunking the batch would fit within the 6 GB container limit.",
+    "expected_file": "handler.py",
+    "expected_line": 134,
+    "environment": "production"
+  },
+  "memory_exhaustion_03": {
+    "error_type": "OutOfMemoryError",
+    "affected_system": "image-thumbnailer",
+    "severity": "Low",
+    "root_cause": "load_source decodes a 12000x9000 source image fully into memory; no dimension guard exists before decode. Occurred in dev and the worker self-recovered.",
+    "expected_file": "resize.py",
+    "expected_line": 57,
+    "environment": "development"
+  },
+  "auth_failure_01": {
+    "error_type": "AuthenticationFailure",
+    "affected_system": "api-gateway",
+    "severity": "Critical",
+    "root_cause": "The identity provider rotated its signing key to kid sk-2025-11 but the gateway's cached JWKS was not refreshed, so every issued token fails signature verification and all authenticated traffic is rejected.",
+    "expected_file": "JwksResolver.java",
+    "expected_line": 64,
+    "environment": "production"
+  },
+  "auth_failure_02": {
+    "error_type": "AuthenticationFailure",
+    "affected_system": "sync-worker",
+    "severity": "High",
+    "root_cause": "The partner API key was rotated on 2026-04-08 but the stored credential for svc-sync@shopflow was never updated, so all 14 tenant syncs fail with 403 credential_expired.",
+    "expected_file": "client.py",
+    "expected_line": 74,
+    "environment": "production"
+  },
+  "auth_failure_03": {
+    "error_type": "AuthenticationFailure",
+    "affected_system": "admin-portal",
+    "severity": "Low",
+    "root_cause": "A single user's TOTP device clock has drifted beyond the tolerance window in verify_totp; isolated to one account with a self-service re-enrolment path available.",
+    "expected_file": "mfa.py",
+    "expected_line": 118,
+    "environment": "production"
+  },
+  "db_deadlock_01": {
+    "error_type": "DatabaseDeadlock",
+    "affected_system": "inventory-service",
+    "severity": "Critical",
+    "root_cause": "decrementBatch updates stock rows in the order line items are supplied rather than a deterministic sorted order, so concurrent reservations acquire row locks in opposite sequences. Multiple orders are now rolling back and stock counts are inconsistent.",
+    "expected_file": "StockRepository.java",
+    "expected_line": 158,
+    "environment": "production"
+  },
+  "db_deadlock_02": {
+    "error_type": "DatabaseDeadlock",
+    "affected_system": "billing-service",
+    "severity": "Medium",
+    "root_cause": "Concurrent workers update the invoices table for overlapping account/period ranges, producing MySQL error 1213. The built-in retry succeeded on attempt 2, so the job completed.",
+    "expected_file": "repository.py",
+    "expected_line": 227,
+    "environment": "production"
+  },
+  "db_deadlock_03": {
+    "error_type": "DatabaseDeadlock",
+    "affected_system": "audit-logger",
+    "severity": "Medium",
+    "root_cause": "Two audit writer processes contend for the same tuple during batch insert; flush uses executemany without ordering rows by primary key. Events were re-queued rather than lost.",
+    "expected_file": "writer.py",
+    "expected_line": 63,
+    "environment": "production"
+  }
+}

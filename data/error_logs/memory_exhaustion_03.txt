@@ -1,0 +1,7 @@
+2026-05-18 10:02:11 INFO  image-thumbnailer - dev worker started, watching queue thumbs.dev
+2026-05-18 10:02:33 INFO  image-thumbnailer - processing upload id=8821 dimensions=12000x9000
+2026-05-18 10:02:35 ERROR image-thumbnailer - failed to allocate decode buffer
+MemoryError: cannot allocate 3.9 GiB for image decode buffer
+  File "/work/thumbs/resize.py", line 57, in load_source
+    raw = Image.open(path).convert("RGB")
+2026-05-18 10:02:35 INFO  image-thumbnailer - job 8821 moved to dead-letter queue, worker recovered

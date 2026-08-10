@@ -1,0 +1,9 @@
+[2026-05-07 02:15:44] INFO  search-indexer: starting incremental reindex, 2400 docs pending
+[2026-05-07 02:15:44] INFO  search-indexer: connecting to elasticsearch cluster es-prod-01.internal:9200
+[2026-05-07 02:16:14] ERROR search-indexer: reindex aborted
+requests.exceptions.ConnectTimeout: HTTPConnectionPool(host='es-prod-01.internal', port=9200): Max retries exceeded with url: /_bulk (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object>, 'Connection to es-prod-01.internal timed out. (connect timeout=30)'))
+  File "/opt/indexer/pipeline.py", line 203, in flush_batch
+    resp = self.session.post(f"{self.host}/_bulk", data=payload, timeout=30)
+  File "/opt/indexer/pipeline.py", line 156, in run
+    self.flush_batch(batch)
+[2026-05-07 02:16:14] WARN  search-indexer: 2400 docs remain unindexed, search results will be stale

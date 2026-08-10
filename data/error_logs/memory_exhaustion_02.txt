@@ -1,0 +1,11 @@
+[2026-04-22 13:07:41,332] INFO  ml-inference: loading model artifact recommender_v7.pkl (2.1 GB)
+[2026-04-22 13:07:58,914] INFO  ml-inference: model loaded, warming up with 64 sample batches
+[2026-04-22 13:08:12,006] WARN  ml-inference: RSS 5.8 GB of 6.0 GB container limit
+[2026-04-22 13:08:14,551] ERROR ml-inference: worker crashed
+Traceback (most recent call last):
+  File "/app/serving/handler.py", line 88, in predict
+    features = np.stack([self._embed(r) for r in batch])
+  File "/app/serving/handler.py", line 134, in _embed
+    return np.zeros((seq_len, 4096), dtype=np.float64)
+numpy.core._exceptions.MemoryError: Unable to allocate 3.12 GiB for an array with shape (100000, 4096) and data type float64
+[2026-04-22 13:08:14,600] ERROR ml-inference: worker 3 of 4 exited, capacity degraded to 75%

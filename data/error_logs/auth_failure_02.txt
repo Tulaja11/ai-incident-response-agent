@@ -1,0 +1,10 @@
+[2026-04-09 21:18:30] INFO  sync-worker: starting nightly CRM sync for 14 tenants
+[2026-04-09 21:18:31] INFO  sync-worker: authenticating to partner API as service account svc-sync@shopflow
+[2026-04-09 21:18:31] ERROR sync-worker: authentication rejected
+requests.exceptions.HTTPError: 403 Client Error: Forbidden for url: https://partner.example.com/api/v3/contacts
+  File "/opt/sync/client.py", line 74, in _request
+    resp.raise_for_status()
+  File "/opt/sync/jobs/crm.py", line 39, in fetch_contacts
+    return self.client._request("GET", "/api/v3/contacts")
+Response body: {"error":"credential_expired","detail":"API key rotated on 2026-04-08, previous key deactivated"}
+[2026-04-09 21:18:31] ERROR sync-worker: sync aborted for all 14 tenants, no records updated
