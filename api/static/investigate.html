@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Investigate — Incident Agent</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-icon">⚡</div>
+                <span class="brand-text">Incident Agent</span>
+                <span class="brand-tag">AI</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/" class="nav-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                    Dashboard
+                </a>
+                <a href="/investigate" class="nav-item active">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    Investigate
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+    <p style="font-weight:600; color:var(--text-secondary); margin-bottom:0.3rem;">Built by Tulaja Patil</p>
+    <p>Multi-agent pipeline<br>LangGraph · Gemini · ChromaDB</p>
+</div>
+        </aside>
+
+        <main class="main-content">
+            <div class="page-header">
+                <div>
+                    <h1>Investigate Incident</h1>
+                    <p class="subtitle">Paste an error log — 5 AI agents will analyze it automatically</p>
+                </div>
+                <span class="timer" id="elapsed"></span>
+            </div>
+
+            <textarea id="log-input" class="log-input" placeholder="Paste your error log here...&#10;&#10;Supports: NullPointerException · ConnectionTimeout · OutOfMemoryError&#10;AuthenticationFailure · DatabaseDeadlock"></textarea>
+
+            <div class="input-actions">
+                <div style="display:flex; gap:0.6rem;">
+                    <button id="btn-investigate" class="btn btn-primary" onclick="startInvestigation()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                        Investigate
+                    </button>
+                    <button class="btn btn-secondary" onclick="loadSample()">Try Sample Log</button>
+                </div>
+            </div>
+
+            <div id="agent-feed" class="agent-feed" style="display:none;">
+                <div class="agent-feed-header">
+                    <h2>Agent Pipeline</h2>
+                </div>
+                <div id="agent-cards" class="agent-timeline"></div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/static/api.js"></script>
+    <script>
+        let timerInterval = null;
+
+        function loadSample() {
+            document.getElementById("log-input").value = SAMPLE_LOG;
+        }
+
+        function buildAgentCards() {
+            const feed = document.getElementById("agent-feed");
+            const cards = document.getElementById("agent-cards");
+            feed.style.display = "block";
+
+            cards.innerHTML = '<div class="timeline-fill" id="timeline-fill"></div>' +
+                AGENTS.map((a, i) => `
+                <div id="card-${a.key}" class="agent-card agent-waiting" style="animation-delay:${i * 0.08}s;">
+                    <div class="agent-card-top">
+                        <div class="agent-card-left">
+                            <span class="agent-num">${String(i + 1).padStart(2, '0')}</span>
+                            <span class="agent-name">${a.icon} ${a.label}</span>
+                        </div>
+                        <span id="pill-${a.key}" class="agent-pill pill-waiting">Waiting</span>
+                    </div>
+                    <div id="result-${a.key}" class="agent-result" style="display:none;"></div>
+                </div>
+            `).join("");
+        }
+
+        function updateTimeline(completedCount) {
+            const fill = document.getElementById("timeline-fill");
+            if (!fill) return;
+            const pct = (completedCount / AGENTS.length) * 100;
+            fill.style.height = pct + "%";
+        }
+
+        function setCardStatus(key, status) {
+            const card = document.getElementById(`card-${key}`);
+            const pill = document.getElementById(`pill-${key}`);
+            if (!card) return;
+            card.className = `agent-card agent-${status}`;
+            pill.className = `agent-pill pill-${status}`;
+            const labels = { waiting: "Waiting", running: "Analyzing...", complete: "Complete", error: "Failed" };
+            pill.textContent = labels[status] || status;
+        }
+
+        function showResult(key, result) {
+            const el = document.getElementById(`result-${key}`);
+            if (!el || !result) return;
+            el.style.display = "block";
+
+            if (key === "error_analyzer") {
+                el.innerHTML = `<strong>${result.error_type || '?'}</strong> in <code>${result.affected_system || '?'}</code> · ${severityBadge(result.severity)} · Confidence ${((result.severity_confidence || 0) * 100).toFixed(0)}%`;
+            } else if (key === "root_cause_investigator" && result.root_cause) {
+                const rc = result.root_cause;
+                el.innerHTML = `<code>${rc.file || '?'}:${rc.line || '?'}</code> in <code>${rc.function || '?'}</code><br>${(rc.explanation || '').substring(0, 150)}`;
+            } else if (key === "historical_pattern" && result.historical_matches) {
+                const matches = result.historical_matches;
+                if (matches.length === 0) {
+                    el.innerHTML = `No similar past incidents found`;
+                } else {
+                    el.innerHTML = matches.map(m =>
+                        `<strong>${m.incident_id}</strong> ${m.title || ''} · <code>${(m.similarity_score * 100).toFixed(0)}% match</code>`
+                    ).join("<br>");
+                }
+            } else if (key === "fix_suggester" && result.suggested_fixes) {
+                el.innerHTML = `${result.suggested_fixes.length} fix${result.suggested_fixes.length !== 1 ? 'es' : ''} generated`;
+            } else if (key === "report_writer") {
+                el.innerHTML = `Report compiled — redirecting to full report...`;
+            }
+        }
+
+        async function startInvestigation() {
+            const input = document.getElementById("log-input");
+            const btn = document.getElementById("btn-investigate");
+            const rawLog = input.value.trim();
+            if (!rawLog) { alert("Paste an error log first."); return; }
+
+            btn.disabled = true;
+            buildAgentCards();
+
+            const startTime = Date.now();
+            const elapsedEl = document.getElementById("elapsed");
+            timerInterval = setInterval(() => {
+                elapsedEl.textContent = ((Date.now() - startTime) / 1000).toFixed(1) + "s";
+            }, 100);
+
+            let currentIndex = 0;
+            let completedCount = 0;
+
+            try {
+                await investigate(rawLog, (type, data) => {
+                    if (type === "pipeline_start") {
+                        setCardStatus(AGENTS[0].key, "running");
+                    }
+                    else if (type === "agent_complete") {
+                        setCardStatus(data.agent, "complete");
+                        showResult(data.agent, data.result);
+                        completedCount++;
+                        updateTimeline(completedCount);
+                        currentIndex = AGENTS.findIndex(a => a.key === data.agent) + 1;
+                        if (currentIndex < AGENTS.length) {
+                            setCardStatus(AGENTS[currentIndex].key, "running");
+                        }
+                    }
+                    else if (type === "pipeline_complete") {
+                        clearInterval(timerInterval);
+                        setTimeout(() => { window.location = `/report?id=${data.incident_id}`; }, 1200);
+                    }
+                    else if (type === "pipeline_error") {
+                        clearInterval(timerInterval);
+                    }
+                });
+            } catch (err) {
+                clearInterval(timerInterval);
+                alert("Investigation failed: " + err.message);
+            } finally {
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>

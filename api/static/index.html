@@ -1,2 +1,130 @@
 <!DOCTYPE html>
-<html><body><h1>API is running</h1></body></html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Incident Response Agent</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-icon">⚡</div>
+                <span class="brand-text">Incident Agent</span>
+                <span class="brand-tag">AI</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/" class="nav-item active">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                    Dashboard
+                </a>
+                <a href="/investigate" class="nav-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    Investigate
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+    <p style="font-weight:600; color:var(--text-secondary); margin-bottom:0.3rem;">Built by Tulaja Patil</p>
+    <p>Multi-agent pipeline<br>LangGraph · Gemini · ChromaDB</p>
+</div>
+        </aside>
+
+        <main class="main-content">
+            <div class="page-header">
+                <div>
+                    <h1>Dashboard</h1>
+                    <p class="subtitle">Overview of past incident investigations</p>
+                </div>
+                <a href="/investigate" class="btn btn-primary" style="text-decoration:none;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    New Investigation
+                </a>
+            </div>
+
+            <div class="stats-row" id="stats-row"></div>
+
+            <div class="table-container">
+                <div class="table-title">Recent Investigations</div>
+                <div id="incidents-list"></div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/static/api.js"></script>
+    <script>
+        async function loadDashboard() {
+            const container = document.getElementById("incidents-list");
+            const statsRow = document.getElementById("stats-row");
+
+            try {
+                const incidents = await fetchIncidents();
+                const total = incidents.length;
+                const critCount = incidents.filter(i => i.severity === "Critical").length;
+                const avgTime = total > 0 ? (incidents.reduce((a, b) => a + (b.processing_time || 0), 0) / total).toFixed(1) : "0";
+                const types = new Set(incidents.map(i => i.error_type)).size;
+
+                statsRow.innerHTML = `
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background:#EEF2FF;color:#4F46E5;">📋</div>
+                        <div class="stat-label">Total Investigations</div>
+                        <div class="stat-value">${total}</div>
+                        <div class="stat-sub">all time</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background:#FEF2F2;color:#DC2626;">🔴</div>
+                        <div class="stat-label">Critical Incidents</div>
+                        <div class="stat-value" style="color:#DC2626;">${critCount}</div>
+                        <div class="stat-sub">${total > 0 ? Math.round(critCount/total*100) : 0}% of total</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background:#F0FDF4;color:#16A34A;">⚡</div>
+                        <div class="stat-label">Avg Response Time</div>
+                        <div class="stat-value">${avgTime}<span class="unit">s</span></div>
+                        <div class="stat-sub">pipeline end-to-end</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background:#FFF7ED;color:#EA580C;">🏷️</div>
+                        <div class="stat-label">Error Types Seen</div>
+                        <div class="stat-value">${types}</div>
+                        <div class="stat-sub">of 5 supported</div>
+                    </div>`;
+
+                if (total === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">🔍</div>
+                            <p style="font-size:0.95rem;color:var(--text-secondary);">No investigations yet</p>
+                            <p>Paste an error log to run your first AI-powered investigation</p>
+                            <div class="empty-action">
+                                <a href="/investigate" class="btn btn-primary" style="text-decoration:none;">Run Investigation</a>
+                            </div>
+                        </div>`;
+                    return;
+                }
+
+                let html = `
+                    <div class="t-row t-header">
+                        <span>ID</span><span>Error Type</span><span>System</span><span>Severity</span><span>Time</span><span></span>
+                    </div>`;
+
+                for (const inc of incidents) {
+                    html += `
+                        <div class="t-row" onclick="window.location='/report?id=${inc.id}'">
+                            <span class="t-id">#${inc.id}</span>
+                            <span class="t-type">${inc.error_type || 'Unknown'}</span>
+                            <span class="t-system">${inc.affected_system || 'unknown'}</span>
+                            <span>${severityBadge(inc.severity)}</span>
+                            <span class="t-time">${inc.processing_time?.toFixed(1) || '?'}s</span>
+                            <span style="color:var(--text-muted);font-size:0.72rem;">${timeAgo(inc.timestamp)}</span>
+                        </div>`;
+                }
+                container.innerHTML = html;
+            } catch (err) {
+                container.innerHTML = `<div class="empty-state"><p style="color:var(--danger);">Failed to load: ${err.message}</p></div>`;
+            }
+        }
+        loadDashboard();
+    </script>
+</body>
+</html>
