@@ -30,7 +30,7 @@ VALID_ERROR_TYPES = [
 ]
 
 _llm = ChatGoogleGenerativeAI(
-    model="gemini-2.0-flash",
+    model="gemini-3.1-flash-lite",
     temperature=0,
 )
 

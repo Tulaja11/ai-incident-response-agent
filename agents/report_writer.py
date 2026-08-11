@@ -17,7 +17,7 @@ from agents.state import IncidentState
 load_dotenv()
 
 _llm = ChatGoogleGenerativeAI(
-    model="gemini-2.0-flash",
+    model="gemini-3.1-flash-lite",
     temperature=0.1,  # slight creativity for readable prose
 )
 
