@@ -22,15 +22,27 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from rag.vector_store import get_collection, embed_query
 
-# Re-ranking weights. Deliberately small relative to a cosine score
-# that typically lands in the 0.6-0.9 band for real matches.
+# Re-ranking weights, deliberately small relative to a cosine score
+# that lands in the 0.70-0.87 band for real matches.
 BOOST_ERROR_TYPE = 0.15
 BOOST_SYSTEM = 0.10
-BOOST_RECENCY = 0.05
 
-CANDIDATE_POOL = 10   # stage 1 breadth
-FINAL_K = 3           # what the agent actually sees
-MIN_SIMILARITY = 0.30 # discard obvious noise
+# Recency was originally 0.05, which was large enough to invert real
+# similarity gaps: a 2025-12 incident scoring 0.641 outranked a
+# 2025-07 incident scoring 0.665. How recent a past incident was says
+# almost nothing about whether it explains the current error, so this
+# is a tiebreaker, not a ranking signal.
+BOOST_RECENCY = 0.02
+
+CANDIDATE_POOL = 10     # stage 1 breadth
+FINAL_K = 3             # what the agent actually sees
+MIN_SIMILARITY = 0.30   # hard floor, discards obvious noise
+
+# Gemini embeddings rarely produce genuinely low cosine scores, so the
+# hard floor alone lets unrelated input return confident-looking
+# matches. Anything below this is flagged not-relevant so downstream
+# agents don't cite it as prior art.
+RELEVANCE_FLOOR = 0.70
 
 
 def build_query(
@@ -159,11 +171,22 @@ def retrieve(
         for c in top:
             c["resolution"] = by_id.get(f"{c['incident_id']}::resolution", "")
 
+    # ── Relevance flag ──
+    # Knowing when NOT to answer matters here: a weak match is worse
+    # than no match, because Agent 4 will generate a confident fix
+    # citing an unrelated incident.
+    for c in top:
+        c["is_relevant"] = c["similarity_score"] >= RELEVANCE_FLOOR
+
     if verbose:
         for i, c in enumerate(top, 1):
+            flag = "" if c["is_relevant"] else "  [below floor]"
             print(f"  {i}. {c['incident_id']} sim={c['similarity_score']:.3f} "
-                  f"final={c['final_score']:.3f} boosts={c['boosts_applied']}")
+                  f"final={c['final_score']:.3f} boosts={c['boosts_applied']}{flag}")
             print(f"     {c['title']}")
+        weak = sum(1 for c in top if not c["is_relevant"])
+        if weak:
+            print(f"  ({weak}/{len(top)} below relevance floor {RELEVANCE_FLOOR})")
 
     return top
 
