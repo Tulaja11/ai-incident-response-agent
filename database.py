@@ -19,8 +19,10 @@ def get_connection():
 
 def init_db():
     conn = get_connection()
+    # Drop and recreate — fresh start on every deploy/restart
+    conn.execute("DROP TABLE IF EXISTS incidents")
     conn.execute("""
-        CREATE TABLE IF NOT EXISTS incidents (
+        CREATE TABLE incidents (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             timestamp TEXT DEFAULT (datetime('now')),
             raw_log TEXT NOT NULL,
